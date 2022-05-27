@@ -61,6 +61,7 @@ export default function initVault({
       this.checkConnection()
       this.fetchData();
       window._refreshBalInterval = setInterval(this.refreshBalance, 4000);
+      window._refreshBalInterval = setInterval(this.checkConnection, 4000);
       window._refreshBalInterval = setInterval(this.getChainSymbol, 500);
     }
 
