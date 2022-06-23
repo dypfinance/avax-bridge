@@ -50,6 +50,8 @@ export default function initVault({
         gasPrice: "",
         txHash: "",
         chainText: "",
+        ethPool: "...",
+        avaxPool: "...",
         is_wallet_connected: false,
         withdrawableUnixTimestamp: null,
       };
@@ -79,11 +81,35 @@ export default function initVault({
           .then((data) => this.setState({ gasPrice: data.fast / 10 }))
           .catch(console.error);
       }
+
+      //Get DYP Balance Ethereum Pool
+      let ethPool = await window.getTokenHolderBalanceAll(bridgeETH._address, bridgeETH.tokenAddress,1);
+      ethPool = ethPool/1e18
+
+      //Get DYP Balance BNB Chain Pool
+      let avaxPool = await window.getTokenHolderBalanceAll(bridgeBSC._address, bridgeETH.tokenAddress,2);
+      avaxPool = avaxPool/1e18
+
+      this.setState({ethPool, avaxPool})
     };
 
     handleApprove = (e) => {
       e.preventDefault();
       let amount = this.state.depositAmount;
+
+
+      if(this.state.chainText === 'ETH') {
+        if (amount > this.state.avaxPool) {
+          window.$.alert('💡 Not enough balance on the bridge, check back later!')
+          return;
+        }
+      }else{
+        if (amount > this.state.ethPool) {
+          window.$.alert('💡 Not enough balance on the bridge, check back later!')
+          return;
+        }
+      }
+
       amount = new BigNumber(amount).times(10 ** TOKEN_DECIMALS).toFixed(0);
       let bridge = this.state.network == "ETH" ? bridgeETH : bridgeBSC;
       (this.state.network == "ETH" ? tokenETH : tokenBSC).approve(
@@ -94,6 +120,20 @@ export default function initVault({
 
     handleDeposit = async (e) => {
       let amount = this.state.depositAmount;
+
+
+      if(this.state.chainText === 'ETH') {
+        if (amount > this.state.avaxPool) {
+          window.$.alert('💡 Not enough balance on the bridge, check back later!')
+          return;
+        }
+      }else{
+        if (amount > this.state.ethPool) {
+          window.$.alert('💡 Not enough balance on the bridge, check back later!')
+          return;
+        }
+      }
+
       amount = new BigNumber(amount).times(10 ** TOKEN_DECIMALS).toFixed(0);
       let bridge = this.state.network == "ETH" ? bridgeETH : bridgeBSC;
       let chainId = await window.web3.eth.getChainId();
@@ -289,6 +329,32 @@ export default function initVault({
                               </div>
                             </div>
                           </div>
+                          <div className="input-group"
+                               style={{height: '1px', background: '#F5F5F5', marginTop: '24px', marginBottom: '16px'}}>
+                          </div>
+                          <div className="input-group" style={{marginBottom: '16px'}}>
+                              <span className="chainContent" style={{gap: '6px'}}>
+                                <img
+                                    src={
+                                      this.state.chainText === "ETH"
+                                          ? EthChain
+                                          : this.state.chainText === "AVAX"
+                                          ? AvaxChain
+                                          : ""
+                                    }
+                                    style={{width: '25px'}}
+                                    alt=""
+                                />
+                                {this.state.chainText === "ETH" ? 'Ethereum' : 'Avalanche'} Pool:
+                                <span className="alertText">
+                                  {this.state.chainText === "ETH" ?
+                                      getFormattedNumber(this.state.ethPool,2)
+                                      :
+                                      getFormattedNumber(this.state.avaxPool,2)
+                                  } DYP
+                                </span>
+                              </span>
+                          </div>
                           <div className="row">
                             <div
                               style={{ paddingRight: "0.3rem" }}
@@ -361,6 +427,32 @@ export default function initVault({
                                 placeholder="Enter Deposit transaction hash"
                                 type="text"
                               />
+                            </div>
+                            <div className="input-group"
+                                 style={{height: '1px', background: '#F5F5F5', marginTop: '24px', marginBottom: '16px'}}>
+                            </div>
+                            <div className="input-group">
+                              <span className="chainContent" style={{gap: '6px'}}>
+                                <img
+                                    src={
+                                      this.state.chainText === "ETH"
+                                          ? AvaxChain
+                                          : this.state.chainText === "AVAX"
+                                          ? EthChain
+                                          : ""
+                                    }
+                                    style={{width: '25px'}}
+                                    alt=""
+                                />
+                                {this.state.chainText === "ETH" ? 'Avalanche' : 'Ethereum'} Pool:
+                                <span className="alertText">
+                                  {this.state.chainText === "ETH" ?
+                                      getFormattedNumber(this.state.avaxPool,2)
+                                      :
+                                      getFormattedNumber(this.state.ethPool,2)
+                                  } DYP
+                                </span>
+                              </span>
                             </div>
                           </div>
                           <button
