@@ -8,7 +8,7 @@ class Connected extends Component {
   };
   render() {
     //   const [isCopied, setCopied] = useCopyClipboard()
-    const account = window.ethereum.selectedAddress;
+      const account = this.props.account;
     return (
       <div className="connectWallet">
         <h3 className="titleWrapper">
